@@ -718,6 +718,25 @@ func TestFeeder(t *testing.T) {
 	})
 }
 
+func TestReadAvailableImages(t *testing.T) {
+	runTest(t, 1, func(i int, c *Conn) {
+		setOption(t, c, "source", "Automatic Document Feeder")
+		setOption(t, c, "mode", "Color")
+		setOption(t, c, "test-picture", "Color pattern")
+		images, err := c.ReadAvailableImages()
+		if err != nil {
+			t.Error("Read available images failed")
+		}
+		// Feeder has 10 pages
+		if len(images) != 10 {
+			t.Errorf("Wrong length of images array: %d", len(images))
+		}
+		for _, im := range images {
+			checkColor(t, im, 8)
+		}
+	})
+}
+
 func TestFeederThreePass(t *testing.T) {
 	// Feeder has 10 pages
 	runTest(t, 11, func(i int, c *Conn) {
