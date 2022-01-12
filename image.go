@@ -140,3 +140,23 @@ func (c *Conn) ReadAvailableImages() ([]*Image, error) {
 
 	return images, nil
 }
+
+// ContinuousRead reads all images from connection and process each image
+// Useful for ADF scanners, fetch images one by one is slow
+func (c *Conn) ContinuousRead(process func(m *Image) error) error {
+	defer c.Cancel()
+
+	for {
+		m, err := c.loadImage()
+		if err != nil {
+			if err == ErrEmpty {
+				break
+			}
+			return err
+		}
+		if err := process(m); err != nil {
+			return err
+		}
+	}
+	return nil
+}

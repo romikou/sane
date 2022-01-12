@@ -737,6 +737,28 @@ func TestReadAvailableImages(t *testing.T) {
 	})
 }
 
+func TestContinuousRead(t *testing.T) {
+	runTest(t, 1, func(i int, c *Conn) {
+		setOption(t, c, "source", "Automatic Document Feeder")
+		setOption(t, c, "mode", "Color")
+		setOption(t, c, "test-picture", "Color pattern")
+
+		var cnt = 0
+		err := c.ContinuousRead(func(m *Image) error {
+			checkColor(t, m, 8)
+			cnt++
+			return nil
+		})
+		if err != nil {
+			t.Error("Continuous failed")
+		}
+		// Feeder has 10 pages
+		if cnt != 10 {
+			t.Errorf("Wrong count of processed images: %d", cnt)
+		}
+	})
+}
+
 func TestFeederThreePass(t *testing.T) {
 	// Feeder has 10 pages
 	runTest(t, 11, func(i int, c *Conn) {
