@@ -723,9 +723,16 @@ func TestReadAvailableImages(t *testing.T) {
 		setOption(t, c, "source", "Automatic Document Feeder")
 		setOption(t, c, "mode", "Color")
 		setOption(t, c, "test-picture", "Color pattern")
-		_, err := c.ReadAvailableImages()
+		images, err := c.ReadAvailableImages()
 		if err != nil {
-			t.Error("Read availeble images failed")
+			t.Error("Read available images failed")
+		}
+		// Feeder has 10 pages
+		if len(images) != 10 {
+			t.Errorf("Wrong length of images array: %d", len(images))
+		}
+		for _, im := range images {
+			checkColor(t, im, 8)
 		}
 	})
 }
