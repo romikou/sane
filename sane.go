@@ -248,10 +248,10 @@ func nthDevice(p **C.SANE_Device, i int) *C.SANE_Device {
 	return a[i]
 }
 
-// Devices lists all available devices.
-func Devices() (devs []Device, err error) {
+func devices(localOnly bool) (devs []Device, err error) {
 	var p **C.SANE_Device
-	if s := C.sane_get_devices(&p, C.SANE_FALSE); s != C.SANE_STATUS_GOOD {
+	saneLocalOnly := boolToSane(localOnly)
+	if s := C.sane_get_devices(&p, saneLocalOnly); s != C.SANE_STATUS_GOOD {
 		return nil, mkError(s)
 	}
 	for i := 0; nthDevice(p, i) != nil; i++ {
@@ -264,6 +264,16 @@ func Devices() (devs []Device, err error) {
 		})
 	}
 	return devs, nil
+}
+
+// Devices lists all available devices.
+func Devices() (devs []Device, err error) {
+	return devices(false)
+}
+
+// LocalDevices lists only local devices.
+func LocalDevices() (devs []Device, err error) {
+	return devices(true)
 }
 
 // Open opens a connection to a device with a given name.
