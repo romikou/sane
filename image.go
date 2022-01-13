@@ -146,15 +146,25 @@ func (c *Conn) ReadAvailableImages() ([]*Image, error) {
 func (c *Conn) ContinuousRead(process func(m *Image) error) error {
 	defer c.Cancel()
 
+	var (
+		m   *Image
+		err error
+	)
+	// Tray can be empty, return on any error
+	m, err = c.loadImage()
+	if err != nil {
+		return err
+	}
 	for {
-		m, err := c.loadImage()
-		if err != nil {
-			if err == ErrEmpty {
-				break
-			}
+		if err := process(m); err != nil {
 			return err
 		}
-		if err := process(m); err != nil {
+		m, err = c.loadImage()
+		if err != nil {
+			if err == ErrEmpty {
+				//No more documents in tray
+				break
+			}
 			return err
 		}
 	}
